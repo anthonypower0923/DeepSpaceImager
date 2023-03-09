@@ -1,6 +1,6 @@
 package com.example.deepspaceimager;
 
-public class CelestialObject {
+public class CelestialObject implements Comparable<CelestialObject> {
     int objectNumber;
     static int objectCounter;
     int size;
@@ -29,6 +29,11 @@ public class CelestialObject {
                 " Estimated oxygen: " + oxygen + '\n' +
                 " Root Node: " + root + '\n' +
                 "-------------------------------------------------" + '\n';
+    }
+
+    @Override
+    public int compareTo(CelestialObject otherObject) {
+        return Integer.compare(getSize(), otherObject.getSize());
     }
 
     public int getSize() {

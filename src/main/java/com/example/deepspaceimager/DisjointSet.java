@@ -3,7 +3,6 @@ package com.example.deepspaceimager;
 import java.util.*;
 
 public class DisjointSet {
-    static ArrayList<Object> celestialObjects = new ArrayList<Object>();
 
 //    Iterative version of find with path compression
     public static int find(int[] a, int id) {

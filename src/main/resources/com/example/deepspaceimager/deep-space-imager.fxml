@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -19,16 +20,17 @@
           <Menu mnemonicParsing="false" text="Scan">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#ScanImageForSetsAndUnionFind" text="AddSets" />
-                  <MenuItem mnemonicParsing="false" onAction="#Debug" text="Debug" />
+                  <MenuItem mnemonicParsing="false" onAction="#CreateCelestialObjects" text="ViewCelestialObjects" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem mnemonicParsing="false" onAction="#Debug" text="Debug" />
             </items>
           </Menu>
         </menus>
       </MenuBar>
-      <ImageView fx:id="imageview" fitHeight="358.0" fitWidth="577.0" layoutX="14.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="imageview" fitHeight="372.0" fitWidth="406.0" layoutX="-1.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true" />
+      <ListView fx:id="listview" layoutX="405.0" layoutY="29.0" prefHeight="372.0" prefWidth="195.0" />
    </children>
 </Pane>

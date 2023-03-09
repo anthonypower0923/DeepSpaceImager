@@ -2,13 +2,13 @@ package com.example.deepspaceimager;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ListView;
 import javafx.scene.image.*;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,16 +17,19 @@ import java.util.*;
 public class DeepSpaceImagerController {
     @FXML
     ImageView imageview;
+    @FXML
+    ListView<String> listview;
     WritableImage writableImage;
     WritableImage originalImage;
     PixelReader pixelReader;
     PixelWriter pixelWriter;
     Stage stage;
+
     static int width;
     static int height;
     HashSet<Integer> hashset = new HashSet<Integer>();
     int[] pixels;
-    ArrayList<Object> celestialObjects = new ArrayList<>();
+    List<CelestialObject> celestialObjects = new ArrayList<>();
 
 
 
@@ -73,7 +76,7 @@ public class DeepSpaceImagerController {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Color color = pixelReader.getColor(x, y);
-                if (y*width+x != 4830000) {
+                if (y*width+x != pixels.length) {
                     if (color.equals(Color.BLACK)) {
                         pixels[y * width + x] = -1;
                     }
@@ -89,14 +92,20 @@ public class DeepSpaceImagerController {
         }
 
     public void CreateCelestialObjects() {
-        Iterator it = hashset.iterator();
-        while (it.hasNext()) {
-            Integer s = (Integer) it.next();
-            if (SizeOfCelestialObjects(s) > 20) {
+        for (Integer s : hashset) {
+            if (SizeOfCelestialObjects(s) > 100) {
                 CelestialObject cj = new CelestialObject(SizeOfCelestialObjects(s), EstimatedSulphur(s), EstimatedHydrogen(s), EstimatedOxygen(s), s);
                 celestialObjects.add(cj);
             }
         }
+        Collections.sort(celestialObjects);
+        int i = 0;
+        for (CelestialObject object : celestialObjects) {
+            i++;
+            object.objectNumber = i;
+        }
+        for (CelestialObject object : celestialObjects)
+            listview.getItems().add(object.toString());
     }
 
     public void UnionFindOnArray() {
@@ -114,9 +123,9 @@ public class DeepSpaceImagerController {
     }
 
     public void GetNumberOfCelestialObjects() {
-        for (int i=0;i<pixels.length;i++) {
-            if (pixels[i] != -1) {
-                hashset.add(pixels[i]);
+        for (int pixel : pixels) {
+            if (pixel != -1) {
+                hashset.add(pixel);
             }
         }
     }
@@ -125,11 +134,11 @@ public class DeepSpaceImagerController {
         //Initialise counter
         int count = 0;
         //Loop through all pixels on image
-        for (int i = 0; i < pixels.length; i++) {
+        for (int pixel : pixels) {
             //Ignore -1 (black) pixels
-            if (pixels[i] != -1) {
+            if (pixel != -1) {
                 //If the value of pixels is equal to s increment count
-                if (pixels[i] == value) {
+                if (pixel == value) {
                     count++;
                 }
             }
@@ -197,6 +206,9 @@ public class DeepSpaceImagerController {
         return blue;
     }
 
+    public void ColourDisjointSets() {
+    }
+
     public void Scale(WritableImage source, int targetWidth, int targetHeight, boolean preserveRatio) {
         imageview = new ImageView(source);
         imageview.setPreserveRatio(preserveRatio);
@@ -205,14 +217,14 @@ public class DeepSpaceImagerController {
     }
 
     public void Debug(ActionEvent actionEvent) {
-        CreateCelestialObjects();
-//        System.out.print(celestialObjects.toString());
+//        ColourDisjointSets();
+//        CreateCelestialObjects();
 //        double test = EstimatedOxygen(4756400);
 //        System.out.println(test);
-//        for(int i=0;i<pixels.length;i++)
-//            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
+        for(int i=0;i<pixels.length;i++)
+            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
     }
-
+    
     public int[] getPixels() {
         return pixels;
     }
