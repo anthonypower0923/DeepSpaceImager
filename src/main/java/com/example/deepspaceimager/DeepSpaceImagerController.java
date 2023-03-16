@@ -1,39 +1,49 @@
 package com.example.deepspaceimager;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.control.ListView;
 import javafx.scene.image.*;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class DeepSpaceImagerController {
     @FXML
     ImageView imageview;
     @FXML
     ListView<String> listview;
+    @FXML
+    Pane pane;
     WritableImage writableImage;
     WritableImage originalImage;
     PixelReader pixelReader;
     PixelWriter pixelWriter;
     Stage stage;
 
-    static int width;
-    static int height;
-    HashSet<Integer> hashset = new HashSet<Integer>();
+    int width;
+    int height;
+    HashSet<Integer> hashset = new HashSet<>();
     int[] pixels;
-    List<CelestialObject> celestialObjects = new ArrayList<>();
+    List<CelestialObject> celestialObjects = new LinkedList<>();
 
 
 
-    public void AddFile(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+    public void addFile(ActionEvent actionEvent) throws IOException {
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
         FileInputStream fileInputStream = new FileInputStream(selectedFile.getPath());
@@ -45,33 +55,33 @@ public class DeepSpaceImagerController {
         originalImage = new WritableImage(pixelReader, width, height);
         pixelWriter = writableImage.getPixelWriter();
         imageview.setImage(writableImage);
-//        Scale(writableImage,512,512,false);
+        celestialObjects = new ArrayList<>();
 //        imageview.setSmooth(true);
 //        System.out.println(count);
     }
 
-    public void ConvertToBlackAndWhite() {
+    public void convertToBlackAndWhite() {
         width = (int) writableImage.getWidth();
         height = (int) writableImage.getHeight();
         pixelReader = writableImage.getPixelReader();
         pixelWriter = writableImage.getPixelWriter();
-        for (int y = 0; y < width; y++) {
-            for (int x = 0; x < height; x++) {
-                Color color = pixelReader.getColor(y, x);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Color color = pixelReader.getColor(x, y);
                 if (color.getBrightness() < 0.3) {
-                    writableImage.getPixelWriter().setColor(y, x, Color.rgb(0, 0, 0));
+                    writableImage.getPixelWriter().setColor(x, y, Color.rgb(0, 0, 0));
                 } else {
-                    writableImage.getPixelWriter().setColor(y,x,Color.rgb(255,255,255));
+                    writableImage.getPixelWriter().setColor(x,y,Color.rgb(255,255,255));
                 }
             }
         }
     }
 
-    public void ScanImageForSetsAndUnionFind(ActionEvent actionEvent) {
-        pixels  = new int[width*height];
-        for(int i=0;i<pixels.length;i++) pixels[i]=i;
+    public void scanImageForSetsAndUnionFind(ActionEvent actionEvent) {
+        pixels  = new int[width * height];
+        for(int i = 0; i<pixels.length; i++) pixels[i]=i;
         // convert to black and white
-        ConvertToBlackAndWhite();
+        convertToBlackAndWhite();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -87,14 +97,15 @@ public class DeepSpaceImagerController {
 //        for(int i=0;i<pixels.length;i++)
 //            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
 
-        UnionFindOnArray();
-        GetNumberOfCelestialObjects();
+        unionFindOnArray();
+        getNumberOfCelestialObjects();
+        imageview.setImage(originalImage);
         }
 
-    public void CreateCelestialObjects() {
-        for (Integer s : hashset) {
-            if (SizeOfCelestialObjects(s) > 100) {
-                CelestialObject cj = new CelestialObject(SizeOfCelestialObjects(s), EstimatedSulphur(s), EstimatedHydrogen(s), EstimatedOxygen(s), s);
+    public void createCelestialObjects() {
+        for (int s : hashset) {
+            if (sizeOfCelestialObjects(DisjointSet.find(pixels, s)) > 500) {
+                CelestialObject cj = new CelestialObject(sizeOfCelestialObjects(DisjointSet.find(pixels,s)), estimatedSulphur(s), estimatedHydrogen(s), estimatedOxygen(s), DisjointSet.find(pixels, s));
                 celestialObjects.add(cj);
             }
         }
@@ -108,7 +119,7 @@ public class DeepSpaceImagerController {
             listview.getItems().add(object.toString());
     }
 
-    public void UnionFindOnArray() {
+    public void unionFindOnArray() {
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+1) != -1)) {
@@ -122,15 +133,17 @@ public class DeepSpaceImagerController {
         }
     }
 
-    public void GetNumberOfCelestialObjects() {
+    public void getNumberOfCelestialObjects() {
         for (int pixel : pixels) {
-            if (pixel != -1) {
-                hashset.add(pixel);
+            if (pixel + 1 < pixels.length) {
+                    if ((pixel != -1) && (pixel + 1 != -1)) {
+                        hashset.add(DisjointSet.find(pixels, pixel));
+                }
             }
         }
     }
 
-    public int SizeOfCelestialObjects(Integer value) {
+    public int sizeOfCelestialObjects(int value) {
         //Initialise counter
         int count = 0;
         //Loop through all pixels on image
@@ -138,7 +151,7 @@ public class DeepSpaceImagerController {
             //Ignore -1 (black) pixels
             if (pixel != -1) {
                 //If the value of pixels is equal to s increment count
-                if (pixel == value) {
+                if (DisjointSet.find(pixels,pixel) == value) {
                     count++;
                 }
             }
@@ -146,59 +159,46 @@ public class DeepSpaceImagerController {
         return count;
     }
 
-    public double EstimatedSulphur(Integer value) {
+    public double estimatedSulphur(int value) {
         int count = 0;
         double red = 0.0;
         for (int i = 0; i < pixels.length; i++) {
-            if (pixels[i] != -1) {
                 if (pixels[i] == value) {
                     Color color = originalImage.getPixelReader().getColor(i%width,i/width);
-//                    System.out.print(color.getRed());
                     count++;
                     red += color.getRed();
-//                    red += red;
-//                    System.out.print(red);
-                    }
                 }
             }
         if (count != 0)
-//        System.out.print(count);
         red = (red/count);
         return red;
         }
 
-    public double EstimatedHydrogen(Integer value) {
+    public double estimatedHydrogen(int value) {
         int count = 0;
         double green = 0.0;
         for (int i = 0; i < pixels.length; i++) {
-            if (pixels[i] != -1) {
                 if (pixels[i] == value) {
                     Color color = originalImage.getPixelReader().getColor(i%width,i/width);
-//                    System.out.print(color.getRed());
+
                     count++;
                     green += color.getGreen();
-//                    red += red;
-//                    System.out.print(red);
-                }
             }
         }
         if (count != 0)
-//        System.out.print(count);
         green = (green/count);
         return green;
     }
 
-    public double EstimatedOxygen(Integer value) {
+    public double estimatedOxygen(int value) {
         int count = 0;
         double blue = 0.0;
         for (int i = 0; i < pixels.length; i++) {
-            if (pixels[i] != -1) {
                 if (pixels[i] == value) {
                     Color color = originalImage.getPixelReader().getColor(i%width,i/width);
                     count++;
                     blue += color.getBlue();
 
-                }
             }
         }
         if (count != 0)
@@ -206,26 +206,57 @@ public class DeepSpaceImagerController {
         return blue;
     }
 
-    public void ColourDisjointSets() {
+    public void randomlyColourDisjointSets() {
+        Color color;
+        for (CelestialObject celestialobject : celestialObjects) {
+            color = Color.color(Math.random(), Math.random(), Math.random());
+            int s = celestialobject.getRoot();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    if (s == DisjointSet.find(pixels, y*width+x)) {
+                            writableImage.getPixelWriter().setColor(x, y, color);
+                    }
+                }
+            }
+        }
+        imageview.setImage(writableImage);
     }
 
-    public void Scale(WritableImage source, int targetWidth, int targetHeight, boolean preserveRatio) {
-        imageview = new ImageView(source);
-        imageview.setPreserveRatio(preserveRatio);
-        imageview.setFitWidth(targetWidth);
-        imageview.setFitHeight(targetHeight);
+    public void chooseDisjointSetToColour() {
+        Color color = Color.color(Math.random(), Math.random(), Math.random());
+        Point p = MouseInfo.getPointerInfo().getLocation();
+        int pointX = (int) p.getX();
+        int pointY = (int) p.getY();
+        System.out.print(p);
+        System.out.print(imageview.getFitWidth() + " , " + imageview.getFitHeight());
+            int s = DisjointSet.find(pixels ,(pointY*width)+pointX);
+            System.out.print(" | " + s + " |  ");
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    if (s == DisjointSet.find(pixels, y * width + x) && (DisjointSet.find(pixels,y*width+x) != -1)) {
+                        writableImage.getPixelWriter().setColor(x, y, color);
+                }
+            }
+        }
+            imageview.setImage(writableImage);
     }
 
-    public void Debug(ActionEvent actionEvent) {
-//        ColourDisjointSets();
-//        CreateCelestialObjects();
-//        double test = EstimatedOxygen(4756400);
-//        System.out.println(test);
-        for(int i=0;i<pixels.length;i++)
-            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
+//    public Image scale(Image source, int targetWidth, int targetHeight, boolean preserveRatio) {
+//        imageview = new ImageView(source);
+//        imageview.setPreserveRatio(preserveRatio);
+//        imageview.setFitWidth(targetWidth);
+//        imageview.setFitHeight(targetHeight);
+//        return imageview.snapshot(null, null);
+//    }
+
+    public void debug(ActionEvent actionEvent) {
+          randomlyColourDisjointSets();
+//        for(int i=0;i<pixels.length;i++)
+//            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
     }
     
     public int[] getPixels() {
         return pixels;
     }
+
 }
