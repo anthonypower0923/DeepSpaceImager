@@ -3,6 +3,7 @@ package com.example.deepspaceimager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.control.ListView;
 import javafx.scene.image.*;
@@ -222,15 +223,19 @@ public class DeepSpaceImagerController {
         imageview.setImage(writableImage);
     }
 
-    public void chooseDisjointSetToColour() {
+    public void chooseDisjointSetToColour(MouseEvent e) {
         Color color = Color.color(Math.random(), Math.random(), Math.random());
-        Point p = MouseInfo.getPointerInfo().getLocation();
-        int pointX = (int) p.getX();
-        int pointY = (int) p.getY();
-        System.out.print(p);
-        System.out.print(imageview.getFitWidth() + " , " + imageview.getFitHeight());
-            int s = DisjointSet.find(pixels ,(pointY*width)+pointX);
-            System.out.print(" | " + s + " |  ");
+        double pointX = e.getX();
+        double pointY = e.getY();
+        ImageView view = (ImageView) e.getSource();
+        Bounds bounds = view.getLayoutBounds();
+        double xScale = bounds.getWidth() / view.getImage().getWidth();
+        double yScale = bounds.getHeight() / view.getImage().getHeight();
+        pointX /= xScale;
+        pointY /= yScale;
+        int xCord = (int) pointX;
+        int yCord = (int) pointY;
+            int s = DisjointSet.find(pixels ,(yCord*width)+xCord);
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     if (s == DisjointSet.find(pixels, y * width + x) && (DisjointSet.find(pixels,y*width+x) != -1)) {
