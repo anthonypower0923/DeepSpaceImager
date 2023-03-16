@@ -103,6 +103,34 @@ public class DeepSpaceImagerController {
         imageview.setImage(originalImage);
         }
 
+    public void unionFindOnArray() {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+1) != -1)) {
+                    DisjointSet.union(getPixels(), y * width + x, y * width + x + 1);
+                }
+                if (y * width + x + width < pixels.length)
+                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+width) != -1)) {
+                    DisjointSet.union(getPixels(), y * width + x, y * width + x + width);
+                }
+            }
+        }
+    }
+
+    public void getNumberOfCelestialObjects() {
+        for (int i : pixels) {
+            if (i + 1 < pixels.length) {
+                if ((i + (width*30) != -1) && (i + (width*30) < pixels.length)) {
+                    if ((i != -1) && (i + 1 != -1)) {
+                        if ((DisjointSet.find(pixels, i) != -1) && (DisjointSet.find(pixels, i + 1) != -1) && (DisjointSet.find(pixels,i+(width*30)) != -1)) {
+                            hashset.add(DisjointSet.find(pixels, i));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void createCelestialObjects() {
         for (int s : hashset) {
             if (sizeOfCelestialObjects(DisjointSet.find(pixels, s)) > 500) {
@@ -120,39 +148,15 @@ public class DeepSpaceImagerController {
             listview.getItems().add(object.toString());
     }
 
-    public void unionFindOnArray() {
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+1) != -1)) {
-                    DisjointSet.union(getPixels(), y * width + x, y * width + x + 1);
-                }
-                if (y * width + x + width < pixels.length)
-                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+width) != -1)) {
-                    DisjointSet.union(getPixels(), y * width + x, y * width + x + width);
-                }
-            }
-        }
-    }
-
-    public void getNumberOfCelestialObjects() {
-        for (int pixel : pixels) {
-            if (pixel + 1 < pixels.length) {
-                    if ((pixel != -1) && (pixel + 1 != -1)) {
-                        hashset.add(DisjointSet.find(pixels, pixel));
-                }
-            }
-        }
-    }
-
     public int sizeOfCelestialObjects(int value) {
         //Initialise counter
         int count = 0;
         //Loop through all pixels on image
-        for (int pixel : pixels) {
+        for (int i : pixels) {
             //Ignore -1 (black) pixels
-            if (pixel != -1) {
+            if (i != -1) {
                 //If the value of pixels is equal to s increment count
-                if (DisjointSet.find(pixels,pixel) == value) {
+                if (DisjointSet.find(pixels,i) == value) {
                     count++;
                 }
             }
