@@ -33,46 +33,18 @@ public class CelestialObject implements Comparable<CelestialObject> {
 
     @Override
     public int compareTo(CelestialObject otherObject) {
-        return Integer.compare(getSize(), otherObject.getSize());
+        return Integer.compare(otherObject.getSize(), getSize());
     }
 
     public int getSize() {
         return size;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public double getSulphur() {
-        return sulphur;
-    }
-
-    public void setSulphur(double sulphur) {
-        this.sulphur = sulphur;
-    }
-
-    public double getHydrogen() {
-        return hydrogen;
-    }
-
-    public void setHydrogen(double hydrogen) {
-        this.hydrogen = hydrogen;
-    }
-
-    public double getOxygen() {
-        return oxygen;
-    }
-
-    public void setOxygen(double oxygen) {
-        this.oxygen = oxygen;
-    }
-
     public int getRoot() {
         return root;
     }
 
-    public void setRoot(int root) {
-        this.root = root;
+    public int getObjectNumber() {
+        return objectNumber;
     }
 }

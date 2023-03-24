@@ -1,7 +1,5 @@
 package com.example.deepspaceimager;
 
-import java.util.*;
-
 public class DisjointSet {
 
 //    Iterative version of find with path compression
