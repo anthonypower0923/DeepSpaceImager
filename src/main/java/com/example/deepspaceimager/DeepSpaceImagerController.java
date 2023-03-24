@@ -49,6 +49,9 @@ public class DeepSpaceImagerController {
 
 
     public void addFile(ActionEvent actionEvent) throws IOException {
+        if (listview.getItems() != null) {
+            listview.getItems().clear();
+        }
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
         FileInputStream fileInputStream = new FileInputStream(selectedFile.getPath());
@@ -98,9 +101,6 @@ public class DeepSpaceImagerController {
             }
         }
 
-//        for(int i=0;i<pixels.length;i++)
-//            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
-
         unionFindOnArray(pixels);
         getNumberOfCelestialObjects(pixels);
         imageview.setImage(originalImage);
@@ -110,27 +110,22 @@ public class DeepSpaceImagerController {
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 if ((y*width+x < pixels.length) && (y*width+x+1 < pixels.length)) {
-                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+1) != -1)) {
                     DisjointSet.union(getPixels(), y * width + x, y * width + x + 1);
                 }
-                }
                 if (y * width + x + width < pixels.length)
-                if((DisjointSet.find(pixels,y*width+x) != -1) && (DisjointSet.find(pixels,y*width+x+width) != -1)) {
                     DisjointSet.union(getPixels(), y * width + x, y * width + x + width);
-                }
             }
         }
     }
 
     public void getNumberOfCelestialObjects(int[] pixels) {
+        hashset.clear();
         for (int i : pixels) {
             if (i + 1 < pixels.length) {
                 if ((i + width != -1) && (i + width < pixels.length)) {
                     if ((i != -1) && (i + 1 != -1)) {
-                        if ((DisjointSet.find(pixels, i) != -1) && (DisjointSet.find(pixels, i + 1) != -1) && (DisjointSet.find(pixels,i + width) != -1)) {
                             hashset.add(DisjointSet.find(pixels, i));
                         }
-                    }
                 }
             }
         }
@@ -138,8 +133,10 @@ public class DeepSpaceImagerController {
 
     public void createCelestialObjects() {
         scanImageForSetsAndUnionFind();
+        celestialObjects.clear();
+        objectRoots.clear();
         for (int s : hashset) {
-            if (sizeOfCelestialObjects(DisjointSet.find(pixels, s), pixels) > 100) {
+            if (sizeOfCelestialObjects(DisjointSet.find(pixels, s), pixels) > 50) {
                 CelestialObject cj = new CelestialObject(sizeOfCelestialObjects(DisjointSet.find(pixels,s) , pixels), estimatedSulphur(s,pixels), estimatedHydrogen(s,pixels), estimatedOxygen(s,pixels), DisjointSet.find(pixels, s));
                 celestialObjects.add(cj);
             }
@@ -174,6 +171,7 @@ public class DeepSpaceImagerController {
     }
 
     private void createIndexListsList() {
+        indexes.clear();
         LinkedList<Integer> list = new LinkedList<>();
         for (int root : objectRoots) {
             for (int i = 0; i < pixels.length; i++) {
@@ -218,14 +216,14 @@ public class DeepSpaceImagerController {
                         text.setText("" + celestialobject.getObjectNumber());
                     }
                 }
-                pane.getChildren().add(2,circle);
-                pane.getChildren().add(3,text);
+                pane.getChildren().add(1,circle);
+                pane.getChildren().add(2,text);
             }
         }
 
     private void removeAllCircles() {
         for (LinkedList<Integer> list : indexes) {
-            pane.getChildren().remove(2);
+            pane.getChildren().remove(1);
         }
     }
 
@@ -328,7 +326,7 @@ public class DeepSpaceImagerController {
             imageview.setImage(writableImage);
     }
 
-//    public void debug(ActionEvent actionEvent) {
+//    public void debug() {
 //          randomlyColourDisjointSets();
 ////        for(int i=0;i<pixels.length;i++)
 ////            System.out.print(DisjointSet.find(pixels,i)+((i+1)%width==0 ? "\n" : " "));
